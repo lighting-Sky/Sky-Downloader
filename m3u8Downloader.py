@@ -16,7 +16,7 @@ import ThreadClass
 file_listname = "file-list.txt"
 list_path = "./m3u8/"
 global_workers = 16
-
+threadPool = ThreadPoolExecutor(max_workers=global_workers, thread_name_prefix="test_")
 class Worker:
     def __init__(self, tasks, workers, task_path, QObject):
         self.task_len = len(tasks)
@@ -38,10 +38,6 @@ class M3u8Parse:
         self.url = url
         self.cmd = cmd
         self.QObject = QObject
-        self.workQueue1 = []
-        self.workQueue2 = []
-        self.workQueue3 = []
-        self.workQueue4 = []
         if path:
             self.path = path
         else:
@@ -125,10 +121,6 @@ class M3u8Parse:
             if output:
                 print(output.strip())
 
-            # if time.time() - st > 3:
-            #     os.kill(process.pid, signal.CTRL_C_EVENT)
-            #     break
-        #self.state_label.setText("完成!")
         rc = process.poll()
         print("rc",rc)
         return rc
@@ -153,8 +145,6 @@ class M3u8Parse:
     
     def GetTsFromM3u8(self):
         
-        threadPool = ThreadPoolExecutor(max_workers=global_workers, thread_name_prefix="test_")
-        
         with open(self.path+'file.m3u8', 'r') as file:
             m3u8_content = file.read()
         
@@ -166,10 +156,10 @@ class M3u8Parse:
 
         length = len(media_segments)
         self.length = length
-        t = ThreadClass.MyThread(self.MonitorProcess)
         tasks = []
-        t.start()
+
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())),"task start!")
+
         for segment in media_segments:
             ts_url = segment.uri
             url = self.CorrectUrl(ts_url)
@@ -180,12 +170,12 @@ class M3u8Parse:
             tasks.append(result)
             # print(filename)
             # print("result:",result)
-        t.join()
         concurrent.futures.wait(tasks) 
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())),"all-task finish!")
         # self.MergeVideos(global_workers)
+        #需要等待所有ts下载完成才开始执行
         cmd = f'ffmpeg -loglevel warning -f concat -safe 0 -i {list_path}{file_listname} -map "0:v?" -map "0:a?" -map "0:s?" -c copy -y -bsf:a aac_adtstoasc test.mp4'
-        os.system()
+        os.system(cmd)
         
     def CorrectUrl(self, url):
         if url[0:4] !="http":
@@ -200,10 +190,6 @@ class M3u8Parse:
         self.GetTsFromM3u8()
         # self.run_command(self.cmd)
     
-    def ParseWork(self):
-        t = ThreadClass.MyThread(self.Running)
-        t.start()
-        t.join()
         
 
 class MediaPlayerWin(QtWidgets.QMainWindow, Ui_Form):
@@ -240,7 +226,9 @@ class MediaPlayerWin(QtWidgets.QMainWindow, Ui_Form):
         # print(url)
         cmd = f"ffmpeg -f concat  -safe 0  -i {list_path}{file_listname} -vcodec copy -acodec copy {outName}.mp4 -y"
         m3 = M3u8Parse(url, pathName, cmd, self)
-        m3.ParseWork()
+        t = threading.Thread(target=self.Running)
+        t.start()
+
         # self.signal_done.emit(1) 
         # result = m3.Running()
         # if result == 0:
