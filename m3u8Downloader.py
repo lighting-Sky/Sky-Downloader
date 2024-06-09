@@ -13,9 +13,12 @@ from m3u8 import M3U8
 import threading
 import shlex,time,shutil
 from subprocess import Popen, PIPE
+from hashlib import md5
 
+# file_listname = "file-list.txt"
+# list_path = "./m3u8/"
 file_listname = "file-list.txt"
-list_path = "./m3u8/"
+tmp_path = "tmp/"
 global_workers = 8
 global_process_data = 0
 threadPool = ThreadPoolExecutor(max_workers=global_workers, thread_name_prefix="test_")
@@ -43,15 +46,28 @@ class M3u8Parse:
         if path:
             self.path = path
         else:
-            self.path = "./"
-        if self.path != "./":
-            if not os.path.exists(self.path):
-                os.makedirs(path)
-            else:
-                shutil.rmtree(self.path)
-                os.mkdir(self.path)
+            self.path = "G:/"
+        # if self.path != "./":
+        #     if not os.path.exists(self.path):
+        #         os.makedirs(path)
+        #     else:
+        #         shutil.rmtree(self.path)
+        #         os.mkdir(self.path)
         
                 
+    def pathCheck(self,path):
+        if not os.path.exists(path):
+                os.makedirs(path)
+        else:
+            shutil.rmtree(path)
+            os.mkdir(path)
+    
+    def genFileName(self,content):
+        obj = md5()
+        obj.update(content.encode("utf-8"))
+        md5str = obj.hexdigest()
+        print(md5str)
+        return (md5str)
     
     def get_dir2file(self):
         file_list =[]
@@ -85,35 +101,6 @@ class M3u8Parse:
 
         return file_list
             
-    # def Merge2mp4(self, file1, file2):
-    #     cmd1 = f"ffmpeg -i {file1} -qscale 4 tmp1.mpg"
-    #     cmd2 = f"ffmpeg -i {file2} -qscale 4 tmp2.mpg"
-    #     return new_file
-    
-    # def MergeVideos(self, workers):
-    #     #将文件分成N分
-    #     with open(self.path+file_listname, "r") as f:
-    #         lines = f.readlines()
-    #         lens = len(lines)
-    #         worker_one_task = (lens+(workers//2))//workers
-    #         start = 1
-    #         for i in range(1, lens+1):
-    #             if i <= workers*worker_one_task and i >= start* worker_one_task:
-    #                 start+=1
-    #             with open(self.path+f"{start}.txt", "a") as f:
-    #                 f.write(lines[i-1])
-    #     threadPool = ThreadPoolExecutor(max_workers=global_workers, thread_name_prefix="test_")
-        # tasks = []
-        # for i in range(1, workers+1):
-        #     cmd = f"ffmpeg -f concat  -safe 0  -i {self.path}{i}.txt -vcodec copy -acodec copy {self.path}{i}.mp4 -y"
-        #     result = threadPool.submit(self.run_command, cmd)
-        #     tasks.append(result)
-        # concurrent.futures.wait(tasks)
-        # for i in range(1, workers+1):
-        #     resultName = "result.mp4"
-        #     cmd1 = f"ffmpeg -i {resultName} -qscale 4 tmp1.mpg"
-        #     cmd = f"ffmpeg -f concat  -safe 0  -i {self.path}{i}.txt -vcodec copy -acodec copy {self.path}{resultName} -y"
-
             
     def run_command(self, command):
         process = Popen(shlex.split(command), stdout=PIPE)
@@ -144,11 +131,11 @@ class M3u8Parse:
     def SaveTsVideo(self, url, filename):
         # print (url)
         response = requests.get(url)
-        with open(self.path+filename, "wb") as f:
+        
+        with open(self.path+tmp_path+filename, "wb") as f:
             f.write(response.content)
     
     def GetTsFromM3u8(self):
-        
         with open(self.path+'file.m3u8', 'r') as file:
             m3u8_content = file.read()
         
@@ -161,16 +148,22 @@ class M3u8Parse:
         length = len(media_segments)
         self.length = length
         tasks = []
-
+        filename_index = 0
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())),"task start!")
 
+        print(f"创建目录:{self.path+tmp_path}")
+        self.pathCheck(self.path+tmp_path)
+        
         for segment in media_segments:
+            filename_index+=1
             ts_url = segment.uri
             url = self.CorrectUrl(ts_url)
-            filename = re.findall(r'_(.*?)\?', ts_url)
+            filename = f"{filename_index}.ts"
+            # filename = self.genFileName(ts_url)+".ts"
+            #file_type = re.findall(r'_(.*?)\?', ts_url)
             with open (self.path+file_listname, "a") as f:
-                f.write(f"file '{filename[0]}'\n")
-            result = threadPool.submit(self.SaveTsVideo, url, filename[0])
+                f.write(f"file '{self.path}{tmp_path}{filename}'\n")
+            result = threadPool.submit(self.SaveTsVideo, url, filename)
             tasks.append(result)
             # print(filename)
             # print("result:",result)
@@ -180,8 +173,10 @@ class M3u8Parse:
         #需要等待所有ts下载完成才开始执行
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())),"开始合并分片...")
         cmd = f'ffmpeg -loglevel warning -f concat -safe 0 -i {self.path}{file_listname} -map "0:v?" -map "0:a?" -map "0:s?" -c copy -y -bsf:a aac_adtstoasc {self.path}output.mp4'
-        os.system(cmd)
+        print(cmd)
+        os.system(self.cmd)
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())),"合并完成！")
+        #shutil.rmtree(self.path+tmp_path)
         
     def CorrectUrl(self, url):
         if url[0:4] !="http":
@@ -231,6 +226,7 @@ class MediaPlayerWin(QtWidgets.QMainWindow, Ui_Form):
         self.th = MyThread()
         self.th.signalForText.connect(self.onUpdateText)
         sys.stdout = self.th
+        self.StartBtn.setEnabled(False)
     
     def onUpdateText(self,text):
         cursor = self.textEdit.textCursor()
@@ -254,30 +250,28 @@ class MediaPlayerWin(QtWidgets.QMainWindow, Ui_Form):
             self.t.start()
         except Exception as e:
             raise e
-    # 实现pushButton_click()函数，textEdit是我们放上去的文本框的id
+
     def startBtnClick(self):
         self.state_label.setText("爬取中...")
         self.progressBar.setValue(0)
         global_workers = self.comboBox.currentText()
         url = self.lineEdit.text()
-        outName = self.outPutName.text()
-        pathName = f"./{self.PathName.text()}/"
+        pathName = f"{self.PathName.text()}/"
+        outName = pathName+self.outPutName.text()
         list_path = pathName
         # print(url)
-        cmd = f"ffmpeg -f concat  -safe 0  -i {list_path}{file_listname} -vcodec copy -acodec copy {outName}.mp4 -y"
+        #cmd = f"ffmpeg -f concat  -safe 0  -i {list_path}{file_listname} -vcodec copy -acodec copy {outName}.mp4 -y"
+        cmd = f'ffmpeg -loglevel warning -f concat -safe 0 -i {pathName}{file_listname} -map "0:v?" -map "0:a?" -map "0:s?" -c copy -y -bsf:a aac_adtstoasc {outName}.mp4'
+        
         m3 = M3u8Parse(url, pathName, cmd, self)
         t = threading.Thread(target=m3.Running)
         t.start()
-        # self.search()
-        # loop = QEventLoop()
-        # QTimer.singleShot(2000, loop.quit)
-        # loop.exec_()
-        # self.signal_done.emit(1) 
-        # result = m3.Running()
-        # if result == 0:
-        #     self.state_label.setText("完成")
-
-        # self.progressBar.setValue(100)
+    
+    def openPath(self):
+        directory = QtWidgets.QFileDialog.getExistingDirectory(None,"选取文件夹","G:/")
+        print(directory)
+        self.PathName.setText(directory)
+        self.StartBtn.setCheckable(True)
         
 
 
