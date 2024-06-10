@@ -62,10 +62,13 @@ class Ui_Form(object):
         self.tableView.setShowGrid(True)
         self.tableView.setObjectName("tableView")
         self.tableView.verticalHeader().setVisible(False)
+        self.pushBtn_tencent = QtWidgets.QPushButton(Form)
+        self.pushBtn_tencent.setGeometry(QtCore.QRect(480, 10, 93, 28))
+        self.pushBtn_tencent.setObjectName("pushBtn_tencent")
 
         self.retranslateUi(Form)
-        # self.pushButton_choose.clicked.connect(self.choosePath) # type: ignore
-        # self.pushButton_download.clicked.connect(self.startDownload) # type: ignore
+        # self.pushButton_choose.clicked.connect(Form.choosePath) # type: ignore
+        # self.pushButton_download.clicked.connect(Form.startDownload) # type: ignore
         # self.pushButton_exit.clicked.connect(Form.exitApp) # type: ignore
         # self.pushButton.clicked.connect(Form.addTask) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -81,3 +84,4 @@ class Ui_Form(object):
         self.pushButton_exit.setText(_translate("Form", "退出"))
         self.pushButton.setText(_translate("Form", "添加任务"))
         self.label_4.setText(_translate("Form", "任务队列:"))
+        self.pushBtn_tencent.setText(_translate("Form", "腾讯视频"))

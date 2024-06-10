@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QMessageBox, QListView, QTableWidgetItem
 import time
 from dowloaderUi import Ui_Form
+from tencentM3UI import Ui_Dialog
 from PyQt5 import QtWidgets
 import threading
 import shlex
@@ -35,6 +36,8 @@ class MediaPlayerWin(QtWidgets.QMainWindow, Ui_Form):
         
     def setupUi(self,Form):
         super(MediaPlayerWin,self).setupUi(Form)
+
+        self.ChildDialog = Ui_Dialog()
         self.pushButton_download.setEnabled(True)
         self.signal_done.connect(self.TaskDoneDisplay)
         self.lineEdit_path.setText("G:/Download")
@@ -49,7 +52,8 @@ class MediaPlayerWin(QtWidgets.QMainWindow, Ui_Form):
         self.pushButton_download.clicked.connect(self.startDownload) # type: ignore
         self.pushButton_exit.clicked.connect(self.exitApp) # type: ignore
         self.pushButton.clicked.connect(self.addTask) # type: ignore
-    
+        self.pushBtn_tencent.clicked.connect(self.tencentParse)
+
     def updateProgressValue(self):
         # with lock:
         if self.outPutLogText == "":
@@ -151,6 +155,26 @@ class MediaPlayerWin(QtWidgets.QMainWindow, Ui_Form):
         self.tasks.addTask(t)
         gid+=1
 
+    def tencentParse(self):
+        b = QtWidgets.QDialog()
+        settingDiag = Ui_Dialog()
+        settingDiag.setupUi(b)
+        b.exec_()
+        print("test",settingDiag.m3u8_str)
+        self.lineEdit_url.setText(settingDiag.m3u8_str)
+        self.lineEdit_filename.setText(settingDiag.title)
+        # self.ChildDialog.show()
+
+
+# class ChildWin(QtWidgets, Ui_Dialog):
+#     # 定义信号
+#     _signal = pyqtSignal(str)
+
+#     def __init__(self):
+#         super(ChildWin, self).__init__()
+#         self.setupUi(self)
+#         self.retranslateUi(self)
+#         self.pushButton.clicked.connect(self.slot1)
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

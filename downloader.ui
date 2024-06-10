@@ -192,6 +192,19 @@
     <bool>false</bool>
    </attribute>
   </widget>
+  <widget class="QPushButton" name="pushBtn_tencent">
+   <property name="geometry">
+    <rect>
+     <x>480</x>
+     <y>10</y>
+     <width>93</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>腾讯视频</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections>
