@@ -276,7 +276,6 @@ class MediaPlayerWin(QtWidgets.QMainWindow, Ui_Form):
 
 
 
-
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     baseW = QtWidgets.QMainWindow()

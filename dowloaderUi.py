@@ -14,10 +14,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(609, 386)
+        Form.resize(584, 628)
         self.pushButton_download = QtWidgets.QPushButton(Form)
-        self.pushButton_download.setEnabled(False)
-        self.pushButton_download.setGeometry(QtCore.QRect(260, 290, 131, 61))
+        self.pushButton_download.setEnabled(True)
+        self.pushButton_download.setGeometry(QtCore.QRect(290, 540, 131, 61))
         self.pushButton_download.setObjectName("pushButton_download")
         self.label = QtWidgets.QLabel(Form)
         self.label.setGeometry(QtCore.QRect(30, 20, 101, 16))
@@ -35,27 +35,39 @@ class Ui_Form(object):
         self.label_3.setGeometry(QtCore.QRect(30, 170, 131, 16))
         self.label_3.setObjectName("label_3")
         self.lineEdit_path = QtWidgets.QLineEdit(Form)
-        self.lineEdit_path.setGeometry(QtCore.QRect(30, 200, 541, 31))
+        self.lineEdit_path.setGeometry(QtCore.QRect(30, 200, 431, 31))
         self.lineEdit_path.setObjectName("lineEdit_path")
         self.pushButton_choose = QtWidgets.QPushButton(Form)
-        self.pushButton_choose.setGeometry(QtCore.QRect(480, 170, 93, 28))
+        self.pushButton_choose.setGeometry(QtCore.QRect(480, 200, 93, 28))
         self.pushButton_choose.setObjectName("pushButton_choose")
         self.pushButton_exit = QtWidgets.QPushButton(Form)
-        self.pushButton_exit.setGeometry(QtCore.QRect(430, 290, 131, 61))
+        self.pushButton_exit.setGeometry(QtCore.QRect(440, 540, 131, 61))
         self.pushButton_exit.setObjectName("pushButton_exit")
         self.label_state = QtWidgets.QLabel(Form)
-        self.label_state.setGeometry(QtCore.QRect(30, 250, 531, 16))
+        self.label_state.setGeometry(QtCore.QRect(30, 500, 521, 20))
         self.label_state.setText("")
         self.label_state.setObjectName("label_state")
         self.progressBar = QtWidgets.QProgressBar(Form)
-        self.progressBar.setGeometry(QtCore.QRect(40, 290, 118, 23))
+        self.progressBar.setGeometry(QtCore.QRect(30, 550, 221, 23))
         self.progressBar.setProperty("value", 24)
         self.progressBar.setObjectName("progressBar")
+        self.pushButton = QtWidgets.QPushButton(Form)
+        self.pushButton.setGeometry(QtCore.QRect(480, 240, 93, 28))
+        self.pushButton.setObjectName("pushButton")
+        self.label_4 = QtWidgets.QLabel(Form)
+        self.label_4.setGeometry(QtCore.QRect(20, 270, 72, 15))
+        self.label_4.setObjectName("label_4")
+        self.tableView = QtWidgets.QTableView(Form)
+        self.tableView.setGeometry(QtCore.QRect(20, 290, 551, 191))
+        self.tableView.setShowGrid(True)
+        self.tableView.setObjectName("tableView")
+        self.tableView.verticalHeader().setVisible(False)
 
         self.retranslateUi(Form)
-        self.pushButton_choose.clicked.connect(self.choosePath) # type: ignore
-        self.pushButton_download.clicked.connect(self.startDownload) # type: ignore
-        self.pushButton_exit.clicked.connect(self.exitApp) # type: ignore
+        # self.pushButton_choose.clicked.connect(self.choosePath) # type: ignore
+        # self.pushButton_download.clicked.connect(self.startDownload) # type: ignore
+        # self.pushButton_exit.clicked.connect(Form.exitApp) # type: ignore
+        # self.pushButton.clicked.connect(Form.addTask) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):
@@ -67,3 +79,5 @@ class Ui_Form(object):
         self.label_3.setText(_translate("Form", "下载路径:"))
         self.pushButton_choose.setText(_translate("Form", "选择"))
         self.pushButton_exit.setText(_translate("Form", "退出"))
+        self.pushButton.setText(_translate("Form", "添加任务"))
+        self.label_4.setText(_translate("Form", "任务队列:"))

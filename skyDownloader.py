@@ -1,7 +1,7 @@
 import sys,os
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QMessageBox, QListView, QTableWidgetItem
 import time
 from dowloaderUi import Ui_Form
 from PyQt5 import QtWidgets
@@ -10,9 +10,11 @@ import shlex
 from subprocess import Popen, PIPE
 import re
 import threading  
-  
-# 创建一个锁对象  
-lock = threading.Lock()  
+from Task import Task
+from MyThread import MyThread
+from DdList import DownloadList
+
+gid = 0
 
 def convert_time_to_seconds(time_str):  
     parts = time_str.split(':')  
@@ -21,13 +23,13 @@ def convert_time_to_seconds(time_str):
         total_seconds = hours * 3600 + minutes * 60 + seconds  
         return total_seconds  
     else:  
-        raise ValueError("时间字符串格式不正确，应为 'HH:MM:SS'") 
+        return 0
     
 class MediaPlayerWin(QtWidgets.QMainWindow, Ui_Form):
 
     outPutLogText = ""
     signal_done = pyqtSignal(int)
-        
+    tasks = DownloadList()
     # def __init__(self):
     #     super(MediaPlayerWin, self).__init__()
         
@@ -36,11 +38,17 @@ class MediaPlayerWin(QtWidgets.QMainWindow, Ui_Form):
         self.pushButton_download.setEnabled(True)
         self.signal_done.connect(self.TaskDoneDisplay)
         self.lineEdit_path.setText("G:/Download")
-        self.th = MyThread()
-        self.th.signalForText.connect(self.onUpdateText)
-        # sys.stdout = self.th
         self.progressBar.setValue(0)
         self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
+        self.slm = QStandardItemModel()
+        head_label = ["文件名","路径","url地址","进度"]
+        self.slm.setHorizontalHeaderLabels(head_label)
+        self.tableView.setModel(self.slm)
+        
+        self.pushButton_choose.clicked.connect(self.choosePath) # type: ignore
+        self.pushButton_download.clicked.connect(self.startDownload) # type: ignore
+        self.pushButton_exit.clicked.connect(self.exitApp) # type: ignore
+        self.pushButton.clicked.connect(self.addTask) # type: ignore
     
     def updateProgressValue(self):
         # with lock:
@@ -50,15 +58,11 @@ class MediaPlayerWin(QtWidgets.QMainWindow, Ui_Form):
         dulation = re.findall(r"Duration: (\d{2}:\d{2}:\d{2})", self.outPutLogText)
         current_du = re.findall(r'time=(\d{2}:\d{2}:\d{2})', self.outPutLogText)
         speed = re.findall(r'bitrate=([0-9a-z./]+)', self.outPutLogText)
+        
         speed = speed[-1] if speed else "0kbit/s"
-        if dulation:
-            dulation = dulation[0]
-        else:
-            dulation = "00:00:00"
-        if current_du:
-            current_du = current_du[-1]
-        else:
-            current_du = "00:00:00"
+        dulation = dulation[0] if dulation else "00:00:00"
+        current_du = current_du[-1] if current_du else "00:00:00"
+        
         dulation_sec = convert_time_to_seconds(dulation)
         current_du_sec = convert_time_to_seconds(current_du)
         if dulation_sec == 0:
@@ -75,39 +79,36 @@ class MediaPlayerWin(QtWidgets.QMainWindow, Ui_Form):
     def timerClick(self):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updateProgressValue)
-        #注意这里是start不是startTimer
         self.timer.start(1000)
     
-    def onUpdateText(self,text):
-        # with lock:
-        self.outPutLogText+=text
-        # with open("11.txt", "w") as f:
-        #     f.write(self.outPutLogText)
-    
     def Running(self):
-        self.label_state.setText("爬取中...")
-        url = self.lineEdit_url.text()
-        pathName = self.lineEdit_path.text()+"/"
-        outName = pathName+self.lineEdit_filename.text()
-        cmd = f'ffmpeg  -threads 0  -i "{url}" -c copy -y -bsf:a aac_adtstoasc {outName}.mp4'
-        print(time.localtime(), cmd)
-        # os.system("dir")
-        # self.run_command(cmd)
-        # b = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE).stdout
-        # print(b)
-        # time.sleep(5)
-        p = Popen(cmd, shell = True,
-                         stdout = PIPE,
-                         stderr = PIPE) 
-        # 获取实时输出并处理
-        for line in iter(p.stderr.readline, b''):  
-            print("out:", line.decode('utf-8'), end='')  # 解码为 utf-8 并打印  
-            self.outPutLogText+=line.decode('utf-8')
-        # 等待进程完成  
-        p.stderr.close()  
-        p.wait()  
-        self.signal_done.emit(1)
-        self.label_state.setText("任务完成！")
+        while True:
+            task = self.tasks.getTaskRunning() if not self.tasks.checkListEmpty() else None
+            if task:
+                print(task)
+                self.label_state.setText("爬取中...")
+                self.slm.setItem(task.id,3,QStandardItem("爬取中"))
+                # url = self.lineEdit_url.text()
+                # pathName = self.lineEdit_path.text()+"/"
+                # outName = pathName+self.lineEdit_filename.text()
+                cmd = f'ffmpeg  -threads 0  -i "{task.url}" -c copy -y -bsf:a aac_adtstoasc {task.path}{task.title}.mp4'
+                print(time.localtime(), cmd)
+                p = Popen(cmd, shell = True,
+                                stdout = PIPE,
+                                stderr = PIPE) 
+                # 获取实时输出并处理
+                for line in iter(p.stderr.readline, b''):  
+                    print("out:", line.decode('utf-8'), end='')  # 解码为 utf-8 并打印  
+                    self.outPutLogText+=line.decode('utf-8')
+                # 等待进程完成  
+                p.stderr.close()  
+                p.wait()  
+                self.signal_done.emit(1)
+                self.label_state.setText("下载完成！")
+                self.slm.setItem(task.id, 3, QStandardItem("已完成"))
+            else:
+                # print("列表空，等待中。。。")
+                time.sleep(1)
 
     def TaskDoneDisplay(self):
         msgBox = QMessageBox()
@@ -136,17 +137,20 @@ class MediaPlayerWin(QtWidgets.QMainWindow, Ui_Form):
             sys.exit(app.exec_())
         else:
             print('不退出')
+    
+    def addTask(self):
+        global gid
+        url = self.lineEdit_url.text()
+        pathName = self.lineEdit_path.text()+"/"
+        outName = self.lineEdit_filename.text()
+        if not outName or not pathName or not url:
+            QMessageBox.information(self,"提示","不能添加空值!")
+            return
+        t = Task(gid, outName,pathName,url,"未开始")
+        self.slm.appendRow(t.convert2QStandardItems())
+        self.tasks.addTask(t)
+        gid+=1
 
-class MyThread(QThread):
-    signalForText = pyqtSignal(str)
-
-    def __init__(self,data=None, parent=None):
-        super(MyThread, self).__init__(parent)
-        self.data = data
-
-    def write(self, text):
-        self.signalForText.emit(str(text))  # 发射信号
-        
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
