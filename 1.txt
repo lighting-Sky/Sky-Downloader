@@ -1,0 +1,23 @@
+Input #0, hls, from 'https://apd-vlive.apdcdn.tc.qq.com/defaultts.tc.qq.com/B_XztNc2Ue3HgxgyyNa2AR9fyKpTUMiCTY8tZeMpKskqamwhEVOY_MNFgdxP3NznO7/svp_50112/fpqKLcz9euc4S8Ptqjinqqoz8ZYNTasNir95s2sb4dde8QgSM_PBR-mKxzEZ_iApa-dUwgVgBQUVcPQcnJim9nHPz8QpFGD3_wKp-FcZmBaSQ86CCIBkLNrfn6MXc1TqCZbVDwgPJ7nEkiGH4zT67p98UOOWmsAjxJPijhi_8Pj8VcFS-mXZ_f6TJ3uPvQLGvScVtWRMnuHa4F7nIiGmV7gvnnNU36eBRHPvwnIM5THjKPyRPpkwFQ/gzc_1000102_0b53leaakaaa5uaaths4wjtmawodavkqaaka.f322016.ts.m3u8?ver=4':
+  Duration: 00:47:52.36, start: 0.118000, bitrate: 0 kb/s
+  Program 0
+    Metadata:
+      variant_bitrate : 0
+  Stream #0:0: Video: hevc (Main) ([36][0][0][0] / 0x0024), yuv420p(tv, bt709), 3840x2160 [SAR 1:1 DAR 16:9], 25 fps, 25 tbr, 90k tbn
+      Metadata:
+        variant_bitrate : 0
+  Stream #0:1: Audio: aac (LC) ([15][0][0][0] / 0x000F), 48000 Hz, stereo, fltp
+      Metadata:
+        variant_bitrate : 0
+Stream mapping:
+  Stream #0:0 -> #0:0 (copy)
+  Stream #0:1 -> #0:1 (copy)
+Output #0, mp4, to 'G:/Download/vv.mp4':
+  Metadata:
+    encoder         : Lavf61.1.100
+  Stream #0:0: Video: hevc (Main) (hev1 / 0x31766568), yuv420p(tv, bt709), 3840x2160 [SAR 1:1 DAR 16:9], q=2-31, 25 fps, 25 tbr, 90k tbn
+      Metadata:
+        variant_bitrate : 0
+[https @ 000001fb146db380] Opening 'https://apd-vlive.apdcdn.tc.qq.com/defaultts.tc.qq.com/B_XztNc2Ue3HgxgyyNa2AR9fyKpTUMiCTY8tZeMpKskqamwhEVOY_MNFgdxP3NznO7/svp_50112/fpqKLcz9euc4S8Ptqjinqqoz8ZYNTasNir95s2sb4dde8QgSM_PBR-mKxzEZ_iApa-dUwgVgBQUVcPQcnJim9nHPz8QpFGD3_wKp-FcZmBaSQ86CCIBkLNrfn6MXc1TqCZbVDwgPJ7nEkiGH4zT67p98UOOWmsAjxJPijhi_8Pj8VcFS-mXZ_f6TJ3uPvQLGvScVtWRMnuHa4F7nIiGmV7gvnnNU36eBRHPvwnIM5THjKPyRPpkwFQ/03_gzc_1000102_0b53leaakaaa5uaaths4wjtmawodavkqaaka.f322016.1.ts?index=3&start=35200&end=47160&brs=20387472&bre=32575135&ver=4&token=d87646d23ef4808b77f5bbdc9fce8dba' for reading
+[out#0/mp4 @ 000001fb1472fa40] video:18599KiB audio:539KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.151472%
+size=   19167KiB time=00:00:34.60 bitrate=4537.7kbits/s speed=66.1x

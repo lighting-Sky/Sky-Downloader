@@ -37,7 +37,6 @@ class Ui_Form(object):
         self.lineEdit_path = QtWidgets.QLineEdit(Form)
         self.lineEdit_path.setGeometry(QtCore.QRect(30, 200, 541, 31))
         self.lineEdit_path.setObjectName("lineEdit_path")
-        # self.lineEdit_path.setText("G:/Download")
         self.pushButton_choose = QtWidgets.QPushButton(Form)
         self.pushButton_choose.setGeometry(QtCore.QRect(480, 170, 93, 28))
         self.pushButton_choose.setObjectName("pushButton_choose")
@@ -45,10 +44,13 @@ class Ui_Form(object):
         self.pushButton_exit.setGeometry(QtCore.QRect(430, 290, 131, 61))
         self.pushButton_exit.setObjectName("pushButton_exit")
         self.label_state = QtWidgets.QLabel(Form)
-        self.label_state.setGeometry(QtCore.QRect(30, 260, 141, 16))
+        self.label_state.setGeometry(QtCore.QRect(30, 250, 531, 16))
         self.label_state.setText("")
         self.label_state.setObjectName("label_state")
-        print("parent setting")
+        self.progressBar = QtWidgets.QProgressBar(Form)
+        self.progressBar.setGeometry(QtCore.QRect(40, 290, 118, 23))
+        self.progressBar.setProperty("value", 24)
+        self.progressBar.setObjectName("progressBar")
 
         self.retranslateUi(Form)
         self.pushButton_choose.clicked.connect(self.choosePath) # type: ignore
